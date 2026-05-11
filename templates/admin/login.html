@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — By OMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --olive: #6B7C3C; --olive-dark: #4A5528; --olive-pale: #E2E8C8;
+      --olive-cream: #F5F3E9; --border: #C8CCAC; --text: #1E200F;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--olive-cream); }
+    .font-display { font-family: 'Playfair Display', serif; }
+    input:focus { outline: none; border-color: var(--olive); box-shadow: 0 0 0 3px rgba(107,124,60,0.15); }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <a href="/" class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">By OMS</a>
+      <p class="text-sm mt-1" style="color: #6B6D52">Administration</p>
+    </div>
+
+    <div class="bg-white rounded-3xl border shadow-sm p-8" style="border-color: var(--border)">
+      <h1 class="font-display text-xl font-semibold mb-6 text-center" style="color: var(--olive-dark)">Connexion</h1>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="mb-4 px-4 py-3 rounded-xl text-sm bg-red-50 border border-red-100 text-red-700">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('admin_login') }}">
+        <div class="mb-5">
+          <label class="block text-sm font-medium mb-2" style="color: var(--text)">Mot de passe</label>
+          <input type="password" name="password" autofocus
+                 class="w-full px-4 py-3 rounded-xl border text-sm"
+                 style="border-color: var(--border); background: var(--olive-cream)"
+                 placeholder="••••••••••">
+        </div>
+        <button type="submit"
+                class="w-full py-3 rounded-full font-medium text-sm text-white"
+                style="background: var(--olive)">
+          Se connecter
+        </button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

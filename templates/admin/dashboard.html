@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — By OMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --olive: #6B7C3C; --olive-dark: #4A5528; --olive-deep: #333D1A;
+      --olive-light: #8FA04E; --olive-pale: #E2E8C8; --olive-cream: #F5F3E9;
+      --olive-mist: #F0EFE5; --gold: #B0922E; --gold-light: #D4B84A;
+      --text: #1E200F; --text-muted: #6B6D52; --border: #C8CCAC;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--olive-cream); color: var(--text); }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .modal-overlay { background: rgba(30,32,15,0.5); backdrop-filter: blur(4px); }
+    input:focus, select:focus { outline: none; border-color: var(--olive); box-shadow: 0 0 0 3px rgba(107,124,60,0.15); }
+    /* Single-grid calendar */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    .cal-header {
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-header:nth-child(7n) { border-right: none; }
+
+    .day-cell {
+      min-height: 90px;
+      padding: 8px;
+      position: relative;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .day-cell:nth-child(7n) { border-right: none; }
+    .day-cell.empty { background: var(--olive-mist); }
+
+    .rdv-pill {
+      display: flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 9999px; font-size: 0.65rem; font-weight: 500;
+      cursor: pointer; transition: opacity 0.15s; white-space: nowrap; overflow: hidden;
+      background: var(--olive-pale); color: var(--olive-dark); margin-bottom: 2px;
+    }
+    .rdv-pill:hover { opacity: 0.75; }
+    .rdv-pill.teinture { background: #fef3c7; color: #92400e; }
+    .lock-btn {
+      position: absolute; top: 4px; right: 4px;
+      opacity: 0; transition: opacity 0.2s;
+      padding: 3px; border-radius: 6px; cursor: pointer;
+    }
+    .day-cell:hover .lock-btn { opacity: 1; }
+    .day-cell.locked .lock-btn { opacity: 1; }
+    .day-cell.locked { background: #fef2f2 !important; }
+    .day-cell.locked .lock-btn svg { color: #ef4444; }
+    .btn-olive { background: var(--olive); color: white; transition: background 0.2s; }
+    .btn-olive:hover { background: var(--olive-dark); }
+    .btn-danger { background: #dc2626; color: white; transition: background 0.2s; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { border: 2px solid var(--olive); color: var(--olive); background: transparent; transition: all 0.2s; }
+    .btn-outline:hover { background: var(--olive); color: white; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Top bar -->
+  <div class="bg-white border-b sticky top-0 z-30" style="border-color: var(--border)">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+      <a href="/" class="font-display text-lg font-semibold" style="color: var(--olive-dark)">By OMS</a>
+      <div class="flex items-center gap-4">
+        <span class="text-xs px-2 py-1 rounded-full" style="background: var(--olive-pale); color: var(--olive-dark)">Admin</span>
+        <a href="{{ url_for('admin_logout') }}" class="text-xs" style="color: var(--text-muted)">Déconnexion</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Month navigation -->
+    <div class="flex items-center justify-between mb-6">
+      <a href="{{ url_for('admin_dashboard', month=prev_month.strftime('%Y-%m')) }}"
+         class="p-2 rounded-xl hover:bg-white border transition-colors" style="border-color: var(--border)">
+        <svg class="w-5 h-5" style="color: var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <h1 class="font-display text-2xl sm:text-3xl font-semibold" style="color: var(--olive-dark)">
+        {{ months_fr[current_month.month] }} {{ current_month.year }}
+      </h1>
+      <a href="{{ url_for('admin_dashboard', month=next_month.strftime('%Y-%m')) }}"
+         class="p-2 rounded-xl hover:bg-white border transition-colors" style="border-color: var(--border)">
+        <svg class="w-5 h-5" style="color: var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      {% set total_rdv = all_reservations | length %}
+      {% set total_ca = all_reservations | sum(attribute='price') %}
+      {% set total_teinture = all_reservations | selectattr('teinture') | list | length %}
+      <div class="bg-white rounded-2xl border p-4 text-center" style="border-color: var(--border)">
+        <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ total_rdv }}</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">RDV ce mois</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-4 text-center" style="border-color: var(--border)">
+        <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ total_ca | int }}€</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">CA estimé</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-4 text-center" style="border-color: var(--border)">
+        <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ total_teinture }}</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">Teintures</p>
+      </div>
+    </div>
+
+    <!-- Calendar — single grid for perfect column alignment -->
+    <div class="bg-white rounded-3xl border shadow-sm overflow-hidden" style="border-color: var(--border)">
+      <div class="cal-grid">
+
+        <!-- En-têtes -->
+        {% for day in ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+        <div class="cal-header">{{ day }}</div>
+        {% endfor %}
+
+        <!-- Jours (toutes les semaines à plat) -->
+        {% for week in cal %}
+          {% for dow in week %}
+          {% if dow == 0 %}
+            <div class="day-cell empty"></div>
+          {% else %}
+            {% set day_date = current_month.replace(day=dow) %}
+            {% set is_today = day_date == today %}
+            {% set is_locked = day_date in unavailable_dates %}
+            {% set day_rdvs = reservations_by_date.get(day_date, []) %}
+
+            <div class="day-cell {{ 'locked' if is_locked else '' }}"
+                 style="{{ 'background: #fef2f2;' if is_locked else '' }}">
+
+              <!-- Numéro du jour -->
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full"
+                      style="{{ 'background: var(--olive); color: white;' if is_today else 'color: var(--text-muted);' }}">
+                  {{ dow }}
+                </span>
+              </div>
+
+              <!-- Pilules RDV -->
+              {% for r in day_rdvs %}
+              <div class="rdv-pill {{ 'teinture' if r.teinture else '' }}"
+                   onclick="openModal({{ r.id }}, '{{ r.name }}', '{{ r.phone }}', '{{ r.instagram | default('') }}', '{{ r.email }}', '{{ r.date }}', '{{ r.time_slot }}', {{ r.price }}, {{ 'true' if r.teinture else 'false' }})">
+                <span>{{ r.time_slot }}</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;max-width:60px">{{ r.name.split()[0] }}</span>
+                {% if r.teinture %}<span>· T</span>{% endif %}
+              </div>
+              {% endfor %}
+
+              {% if is_locked %}
+              <div class="text-xs mt-1 flex items-center gap-1" style="color: #ef4444">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span>Bloqué</span>
+              </div>
+              {% endif %}
+
+              <!-- Bouton cadenas -->
+              <button class="lock-btn" onclick="toggleDay('{{ day_date }}')"
+                      title="{{ 'Débloquer' if is_locked else 'Bloquer' }}">
+                <svg class="w-3.5 h-3.5" style="color: {{ '#ef4444' if is_locked else 'var(--text-muted)' }}"
+                     fill="{{ 'currentColor' if is_locked else 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                  {% if is_locked %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  {% else %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                  {% endif %}
+                </svg>
+              </button>
+
+            </div>
+          {% endif %}
+          {% endfor %}
+        {% endfor %}
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm" onclick.stop="">
+      <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
+        <h2 class="font-display text-lg font-semibold" style="color: var(--olive-dark)">Détail RDV</h2>
+        <button onclick="closeModal()" class="p-1 rounded-full hover:bg-gray-100">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span style="color: var(--text-muted)">Nom</span>
+          <span id="m-name" class="font-medium"></span>
+        </div>
+        <div class="flex justify-between">
+          <span style="color: var(--text-muted)">Téléphone</span>
+          <a id="m-phone" href="" class="font-medium" style="color: var(--olive)"></a>
+        </div>
+        <div class="flex justify-between">
+          <span style="color: var(--text-muted)">Instagram</span>
+          <a id="m-instagram" href="" target="_blank" class="font-medium" style="color: var(--olive)"></a>
+        </div>
+        <div class="flex justify-between">
+          <span style="color: var(--text-muted)">Email</span>
+          <a id="m-email" href="" class="font-medium truncate max-w-44" style="color: var(--olive)"></a>
+        </div>
+        <div class="flex justify-between">
+          <span style="color: var(--text-muted)">Date</span>
+          <span id="m-date" class="font-medium"></span>
+        </div>
+        <div class="flex justify-between">
+          <span style="color: var(--text-muted)">Heure</span>
+          <span id="m-slot" class="font-medium"></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span style="color: var(--text-muted)">Teinture</span>
+          <span id="m-teinture"></span>
+        </div>
+        <div class="flex justify-between pt-3 border-t" style="border-color: var(--border)">
+          <span class="font-semibold">Total</span>
+          <span id="m-price" class="font-display text-xl font-semibold" style="color: var(--olive-dark)"></span>
+        </div>
+      </div>
+      <div class="px-6 pb-6 flex gap-3">
+        <button onclick="openMove()" class="flex-1 py-2.5 rounded-full text-sm font-medium border btn-outline"
+                style="border-color: var(--olive); color: var(--olive)">
+          Déplacer
+        </button>
+        <button onclick="confirmDelete()" class="flex-1 py-2.5 rounded-full text-sm font-medium btn-danger">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Move Modal -->
+  <div id="move-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm">
+      <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
+        <h2 class="font-display text-lg font-semibold" style="color: var(--olive-dark)">Déplacer le RDV</h2>
+        <button onclick="closeMove()" class="p-1 rounded-full hover:bg-gray-100">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--text)">Nouvelle date</label>
+          <input type="date" id="move-date"
+                 class="w-full px-4 py-2.5 rounded-xl border text-sm"
+                 style="border-color: var(--border); background: var(--olive-cream)">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--text)">Nouveau créneau</label>
+          <select id="move-slot" class="w-full px-4 py-2.5 rounded-xl border text-sm"
+                  style="border-color: var(--border); background: var(--olive-cream)">
+            {% for slot in time_slots %}
+            <option value="{{ slot }}">{{ slot }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div id="move-error" class="hidden text-sm text-red-600 px-3 py-2 rounded-xl bg-red-50"></div>
+      </div>
+      <div class="px-6 pb-6">
+        <button onclick="submitMove()" class="w-full py-3 rounded-full text-sm font-medium btn-olive">
+          Confirmer le déplacement
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm form (hidden) -->
+  <form id="delete-form" method="POST" action="{{ url_for('admin_delete') }}" class="hidden">
+    <input type="hidden" name="reservation_id" id="delete-rid">
+    <input type="hidden" name="month" value="{{ current_month.strftime('%Y-%m') }}">
+  </form>
+
+  <script>
+    let currentRdv = null;
+
+    function openModal(id, name, phone, instagram, email, date, slot, price, teinture) {
+      currentRdv = { id, date, slot };
+      document.getElementById('m-name').textContent = name;
+      document.getElementById('m-phone').textContent = phone;
+      document.getElementById('m-phone').href = 'tel:' + phone;
+      const igEl = document.getElementById('m-instagram');
+      igEl.textContent = instagram || '—';
+      igEl.href = instagram ? 'https://instagram.com/' + instagram.replace('@', '') : '#';
+      document.getElementById('m-email').textContent = email;
+      document.getElementById('m-email').href = 'mailto:' + email;
+
+      const d = new Date(date + 'T00:00:00');
+      const months = ['jan.', 'fév.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sep.', 'oct.', 'nov.', 'déc.'];
+      const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+      document.getElementById('m-date').textContent = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
+      document.getElementById('m-slot').textContent = slot;
+      document.getElementById('m-price').textContent = price + '€';
+
+      const teintureEl = document.getElementById('m-teinture');
+      if (teinture) {
+        teintureEl.innerHTML = '<span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="background: #fef3c7; color: #92400e;">Oui · +5€</span>';
+      } else {
+        teintureEl.innerHTML = '<span class="text-gray-400 text-sm">Non</span>';
+      }
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+      document.getElementById('detail-modal').classList.add('flex');
+    }
+
+    function closeModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+      document.getElementById('detail-modal').classList.remove('flex');
+    }
+
+    function openMove() {
+      if (!currentRdv) return;
+      document.getElementById('move-date').value = currentRdv.date;
+      document.getElementById('move-slot').value = currentRdv.slot;
+      document.getElementById('move-error').classList.add('hidden');
+      document.getElementById('move-modal').classList.remove('hidden');
+      document.getElementById('move-modal').classList.add('flex');
+    }
+
+    function closeMove() {
+      document.getElementById('move-modal').classList.add('hidden');
+      document.getElementById('move-modal').classList.remove('flex');
+    }
+
+    async function submitMove() {
+      if (!currentRdv) return;
+      const newDate = document.getElementById('move-date').value;
+      const newSlot = document.getElementById('move-slot').value;
+
+      if (!newDate) { showMoveError('Veuillez choisir une date.'); return; }
+
+      const form = new FormData();
+      form.append('reservation_id', currentRdv.id);
+      form.append('new_date', newDate);
+      form.append('new_slot', newSlot);
+
+      try {
+        const res = await fetch('/admin/move', { method: 'POST', body: form });
+        const data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          showMoveError(data.error || 'Erreur inconnue.');
+        }
+      } catch(e) {
+        showMoveError('Erreur réseau.');
+      }
+    }
+
+    function showMoveError(msg) {
+      const el = document.getElementById('move-error');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function confirmDelete() {
+      if (!currentRdv) return;
+      if (!confirm('Supprimer ce rendez-vous ?')) return;
+      document.getElementById('delete-rid').value = currentRdv.id;
+      document.getElementById('delete-form').submit();
+    }
+
+    async function toggleDay(dateStr) {
+      const form = new FormData();
+      form.append('date', dateStr);
+
+      try {
+        const res = await fetch('/admin/toggle-day', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (data.requires_confirm) {
+          if (!confirm(`${data.count} RDV existent pour ce jour. Bloquer quand même ?`)) return;
+          form.append('confirm', 'yes');
+          const res2 = await fetch('/admin/toggle-day', { method: 'POST', body: form });
+          await res2.json();
+          window.location.reload();
+        } else {
+          window.location.reload();
+        }
+      } catch(e) {
+        alert('Erreur.');
+      }
+    }
+
+    document.getElementById('detail-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.getElementById('move-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeMove();
+    });
+  </script>
+
+</body>
+</html>

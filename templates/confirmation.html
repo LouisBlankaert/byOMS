@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Réservation confirmée — By OMS{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 sm:px-6 py-16">
+
+  <!-- Success header -->
+  <div class="text-center mb-10">
+    <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
+         style="background: var(--olive-pale)">
+      <svg class="w-10 h-10" style="color: var(--olive)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h1 class="font-display text-3xl sm:text-4xl font-semibold mb-2" style="color: var(--olive-dark)">
+      Réservation confirmée !
+    </h1>
+    <p class="text-sm" style="color: var(--text-muted)">
+      Votre rendez-vous a bien été enregistré.
+    </p>
+  </div>
+
+  <!-- Booking summary -->
+  <div class="bg-white rounded-3xl border shadow-sm overflow-hidden mb-6" style="border-color: var(--border)">
+    <div class="px-6 py-4 border-b" style="border-color: var(--border); background: var(--olive-cream)">
+      <p class="text-xs uppercase tracking-widest font-medium" style="color: var(--olive)">Votre rendez-vous</p>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div class="flex justify-between items-center">
+        <span class="text-sm" style="color: var(--text-muted)">Nom</span>
+        <span class="font-medium text-sm" style="color: var(--text)">{{ reservation.name }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm" style="color: var(--text-muted)">Date</span>
+        <span class="font-medium text-sm" style="color: var(--text)">
+          {% set days_fr = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] %}
+          {% set months_fr = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'] %}
+          {% set dow = reservation.date.weekday() %}
+          {{ days_fr[dow] }} {{ reservation.date.day }} {{ months_fr[reservation.date.month] }} {{ reservation.date.year }}
+        </span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm" style="color: var(--text-muted)">Heure</span>
+        <span class="font-medium text-sm" style="color: var(--text)">{{ reservation.time_slot }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm" style="color: var(--text-muted)">Instagram</span>
+        <span class="font-medium text-sm" style="color: var(--text)">{{ reservation.instagram }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm" style="color: var(--text-muted)">Prestation</span>
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-sm" style="color: var(--text)">Rehaussement de cils</span>
+          {% if reservation.teinture %}
+          <span class="tag-teinture">+ Teinture</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="flex justify-between items-center pt-4 border-t" style="border-color: var(--border)">
+        <span class="font-semibold" style="color: var(--text)">Total</span>
+        <span class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ reservation.price | int }}€</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-2 text-center">
+    <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2 text-sm nav-link">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      Retour à l'accueil
+    </a>
+  </div>
+
+</div>
+{% endblock %}

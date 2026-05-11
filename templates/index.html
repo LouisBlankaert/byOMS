@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}By OMS — Rehaussement de Cils à Bruxelles{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="relative overflow-hidden" style="background: linear-gradient(135deg, var(--olive-deep) 0%, var(--olive-dark) 50%, var(--olive) 100%)">
+  <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 80%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px); background-size: 60px 60px;"></div>
+  <div class="relative max-w-4xl mx-auto px-4 sm:px-6 py-28 sm:py-36 text-center text-white">
+    <p class="text-sm tracking-[0.3em] uppercase mb-4 opacity-70">Bruxelles · 7j/7</p>
+    <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-semibold mb-6 leading-tight">
+      Révélez<br><em class="not-italic" style="color: var(--gold-light)">votre regard</em>
+    </h1>
+    <p class="text-lg sm:text-xl opacity-80 mb-10 max-w-xl mx-auto font-light">
+      Rehaussement de cils professionnel à Bruxelles.<br>Résultats naturels et durables, sans colle ni extension.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="{{ url_for('booking') }}"
+         class="inline-block px-8 py-4 rounded-full font-medium text-base transition-all"
+         style="background: var(--gold-light); color: var(--olive-deep); hover:opacity-90;">
+        Réserver mon RDV
+      </a>
+      <a href="#services"
+         class="inline-block px-8 py-4 rounded-full font-medium text-base border border-white/40 text-white hover:bg-white/10 transition-all">
+        En savoir plus
+      </a>
+    </div>
+    <div class="mt-14 flex flex-wrap justify-center gap-8 text-sm opacity-70">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Séance d'1 heure
+      </div>
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Disponible 7j/7
+      </div>
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Bruxelles
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section id="services" class="py-20 px-4 sm:px-6 max-w-5xl mx-auto">
+  <div class="text-center mb-14">
+    <p class="text-xs tracking-[0.25em] uppercase mb-3" style="color: var(--olive)">Le soin phare</p>
+    <h2 class="font-display text-3xl sm:text-4xl font-semibold" style="color: var(--olive-dark)">Rehaussement de cils</h2>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-8 items-center">
+    <div class="space-y-5">
+      <p class="text-base leading-relaxed" style="color: var(--text-muted)">
+        Le rehaussement de cils (ou <strong style="color: var(--text)">lash lift</strong>) est un soin semi-permanent qui courbe et met en valeur vos cils naturels grâce à une solution de kératine. Aucune colle, aucune extension — uniquement votre beauté naturelle sublimée.
+      </p>
+      <p class="text-base leading-relaxed" style="color: var(--text-muted)">
+        Le résultat dure <strong style="color: var(--text)">6 à 8 semaines</strong> selon la pousse naturelle de vos cils. Un soin parfait si vous voulez simplifier votre routine beauté tout en gardant un regard ouvert et lumineux.
+      </p>
+      <div class="grid grid-cols-2 gap-4 pt-2">
+        <div class="p-4 rounded-2xl" style="background: var(--olive-pale)">
+          <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">60 min</p>
+          <p class="text-xs mt-1" style="color: var(--text-muted)">Durée du soin</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background: var(--olive-pale)">
+          <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">6–8 sem.</p>
+          <p class="text-xs mt-1" style="color: var(--text-muted)">Tenue</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-3xl overflow-hidden" style="background: var(--olive-pale); aspect-ratio: 4/3;">
+      <div class="h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center" style="background: var(--olive)">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+        </div>
+        <p class="font-display text-lg" style="color: var(--olive-dark)">Résultat naturel garanti</p>
+        <p class="text-sm" style="color: var(--text-muted)">Vos cils, sublimés</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option teinture -->
+  <div class="mt-10 p-6 rounded-2xl border flex gap-4 items-start" style="border-color: var(--border); background: white">
+    <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center" style="background: var(--olive-pale)">
+      <svg class="w-5 h-5" style="color: var(--olive)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+      </svg>
+    </div>
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <p class="font-medium text-sm" style="color: var(--text)">Option teinture</p>
+        <span class="tag-teinture">+5€</span>
+      </div>
+      <p class="text-sm" style="color: var(--text-muted)">
+        Combinez votre lash lift avec une teinture de cils pour un regard encore plus défini. Sélectionnable lors de votre réservation.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="py-16 px-4 sm:px-6" style="background: var(--olive-mist)">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+      <p class="text-xs tracking-[0.25em] uppercase mb-3" style="color: var(--olive)">Tarifs</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-semibold" style="color: var(--olive-dark)">Simple et transparent</h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+      <div class="bg-white rounded-3xl p-8 text-center shadow-sm border" style="border-color: var(--border)">
+        <p class="text-sm uppercase tracking-widest mb-4" style="color: var(--text-muted)">Lundi — Samedi</p>
+        <p class="font-display text-5xl font-semibold mb-2" style="color: var(--olive-dark)">35€</p>
+        <p class="text-xs mb-6" style="color: var(--text-muted)">Rehaussement de cils · 1h</p>
+        <a href="{{ url_for('booking') }}" class="block w-full py-3 rounded-full text-sm font-medium btn-olive">
+          Réserver
+        </a>
+      </div>
+
+      <div class="rounded-3xl p-8 text-center text-white shadow-sm relative overflow-hidden" style="background: var(--olive)">
+        <div class="absolute inset-0 opacity-10" style="background: radial-gradient(circle at top right, white, transparent)"></div>
+        <p class="text-sm uppercase tracking-widest mb-4 opacity-70">Dimanche</p>
+        <p class="font-display text-5xl font-semibold mb-2">40€</p>
+        <p class="text-xs mb-6 opacity-70">Rehaussement de cils · 1h</p>
+        <a href="{{ url_for('booking') }}"
+           class="block w-full py-3 rounded-full text-sm font-medium transition-all"
+           style="background: white; color: var(--olive-dark);">
+          Réserver
+        </a>
+      </div>
+    </div>
+
+    <p class="text-center text-sm mt-6" style="color: var(--text-muted)">
+      Option teinture : <strong style="color: var(--text)">+5€</strong>
+    </p>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="py-20 px-4 sm:px-6 max-w-4xl mx-auto">
+  <div class="text-center mb-12">
+    <p class="text-xs tracking-[0.25em] uppercase mb-3" style="color: var(--olive)">Comment ça marche</p>
+    <h2 class="font-display text-3xl sm:text-4xl font-semibold" style="color: var(--olive-dark)">Réservez en 2 minutes</h2>
+  </div>
+
+  <div class="grid sm:grid-cols-3 gap-8">
+    {% for step in [
+      ("01", "Choisissez un créneau", "Sélectionnez votre date et horaire dans le calendrier."),
+      ("02", "Remplissez le formulaire", "Vos coordonnées et l'option teinture si souhaitée."),
+      ("03", "Confirmez votre RDV", "Votre rendez-vous est enregistré instantanément.")
+    ] %}
+    <div class="text-center">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 font-display text-lg font-semibold"
+           style="background: var(--olive-pale); color: var(--olive-dark)">{{ step[0] }}</div>
+      <h3 class="font-medium mb-2" style="color: var(--text)">{{ step[1] }}</h3>
+      <p class="text-sm" style="color: var(--text-muted)">{{ step[2] }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="text-center mt-12">
+    <a href="{{ url_for('booking') }}"
+       class="inline-block px-10 py-4 rounded-full font-medium btn-olive text-base">
+      Prendre rendez-vous
+    </a>
+  </div>
+</section>
+
+<!-- Instagram CTA -->
+<section class="py-16 px-4 sm:px-6" style="background: linear-gradient(135deg, var(--olive-dark), var(--olive-deep))">
+  <div class="max-w-2xl mx-auto text-center text-white">
+    <p class="opacity-60 text-sm mb-4">Suivez nos réalisations</p>
+    <h2 class="font-display text-3xl sm:text-4xl font-semibold mb-6">@by.oms</h2>
+    <a href="https://instagram.com/by.oms" target="_blank" rel="noopener"
+       class="inline-flex items-center gap-2 px-8 py-3 rounded-full font-medium transition-all"
+       style="background: var(--gold-light); color: var(--olive-deep)">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      Voir nos réalisations
+    </a>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}By OMS — Rehaussement de Cils à Bruxelles{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --olive: #6B7C3C;
+      --olive-dark: #4A5528;
+      --olive-deep: #333D1A;
+      --olive-light: #8FA04E;
+      --olive-pale: #E2E8C8;
+      --olive-cream: #F5F3E9;
+      --olive-mist: #F0EFE5;
+      --gold: #B0922E;
+      --gold-light: #D4B84A;
+      --text: #1E200F;
+      --text-muted: #6B6D52;
+      --border: #C8CCAC;
+    }
+    body { font-family: 'Inter', sans-serif; background-color: var(--olive-cream); color: var(--text); }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .btn-olive {
+      background-color: var(--olive);
+      color: white;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    .btn-olive:hover { background-color: var(--olive-dark); transform: translateY(-1px); }
+    .btn-olive:active { transform: translateY(0); }
+    .btn-outline {
+      border: 2px solid var(--olive);
+      color: var(--olive);
+      transition: all 0.2s;
+    }
+    .btn-outline:hover { background-color: var(--olive); color: white; }
+    .tag-teinture {
+      background-color: var(--gold-light);
+      color: #5a3e00;
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .flash-error { background: #fef2f2; border-left: 4px solid #dc2626; color: #991b1b; }
+    .flash-success { background: #f0fdf4; border-left: 4px solid var(--olive); color: var(--olive-dark); }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--olive);
+      box-shadow: 0 0 0 3px rgba(107,124,60,0.15);
+    }
+    .nav-link { color: var(--text-muted); transition: color 0.2s; }
+    .nav-link:hover { color: var(--olive); }
+    .nav-link.active { color: var(--olive); font-weight: 500; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b sticky top-0 z-40" style="border-color: var(--border)">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <a href="{{ url_for('index') }}" class="font-display text-xl font-semibold tracking-wide" style="color: var(--olive-dark)">
+        By OMS
+      </a>
+      <div class="flex items-center gap-6 text-sm">
+        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Accueil</a>
+        <a href="{{ url_for('contact') }}" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
+        <a href="{{ url_for('booking') }}" class="btn-olive px-4 py-2 rounded-full text-sm font-medium">
+          Réserver
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 pt-4">
+        {% for category, message in messages %}
+          <div class="flash-{{ category }} px-4 py-3 rounded-lg mb-2 text-sm">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main content -->
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-16 py-10 border-t text-sm" style="background: var(--olive-mist); border-color: var(--border)">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="font-display text-lg" style="color: var(--olive-dark)">By OMS</div>
+      <div style="color: var(--text-muted)" class="text-center text-xs">
+        Bruxelles · Lun–Dim 10h–18h · Rehaussement de cils
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://instagram.com/by.oms" target="_blank" rel="noopener"
+           class="nav-link flex items-center gap-1.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          Instagram
+        </a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
