@@ -297,6 +297,13 @@ def admin_dashboard():
                            days_in_month=days_in_month)
 
 
+@app.route('/admin/reservations')
+@admin_required
+def admin_reservations():
+    reservations = Reservation.query.order_by(Reservation.date.desc(), Reservation.time_slot.desc()).all()
+    return render_template('admin/reservations.html', reservations=reservations, today=get_today())
+
+
 @app.route('/admin/delete', methods=['POST'])
 @admin_required
 def admin_delete():

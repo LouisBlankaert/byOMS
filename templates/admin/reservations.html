@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réservations — By OMS Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --olive: #6B7C3C; --olive-dark: #4A5528; --olive-pale: #E2E8C8; --olive-cream: #F5F3E9;
+      --olive-mist: #F0EFE5; --text: #1E200F; --text-muted: #6B6D52; --border: #C8CCAC;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--olive-cream); color: var(--text); }
+    .font-display { font-family: 'Playfair Display', serif; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Top bar -->
+  <div class="bg-white border-b sticky top-0 z-30" style="border-color: var(--border)">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+      <a href="/" class="font-display text-lg font-semibold" style="color: var(--olive-dark)">By OMS</a>
+      <div class="flex items-center gap-2">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+           style="background: var(--olive-pale); color: var(--olive-dark);">
+          Calendrier
+        </a>
+        <a href="{{ url_for('admin_reservations') }}"
+           class="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+           style="background: var(--olive); color: white;">
+          Réservations
+        </a>
+        <a href="{{ url_for('admin_logout') }}" class="text-xs ml-2" style="color: var(--text-muted)">Déconnexion</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Header + stats -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">Toutes les réservations</h1>
+      <span class="text-sm px-3 py-1 rounded-full" style="background: var(--olive-pale); color: var(--olive-dark)">
+        {{ reservations | length }} RDV
+      </span>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-2xl border p-4 text-center" style="border-color: var(--border)">
+        <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ reservations | length }}</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">Total RDV</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-4 text-center" style="border-color: var(--border)">
+        <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ reservations | sum(attribute='price') | int }}€</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">CA total</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-4 text-center" style="border-color: var(--border)">
+        {% set upcoming = reservations | selectattr('date', 'ge', today) | list %}
+        <p class="font-display text-2xl font-semibold" style="color: var(--olive-dark)">{{ upcoming | length }}</p>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted)">À venir</p>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-3xl border shadow-sm overflow-hidden" style="border-color: var(--border)">
+      {% if reservations %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr style="background: var(--olive-cream); border-bottom: 1px solid var(--border)">
+              <th class="text-left px-5 py-3 font-medium text-xs uppercase tracking-wider" style="color: var(--text-muted)">Date</th>
+              <th class="text-left px-5 py-3 font-medium text-xs uppercase tracking-wider" style="color: var(--text-muted)">Heure</th>
+              <th class="text-left px-5 py-3 font-medium text-xs uppercase tracking-wider" style="color: var(--text-muted)">Nom</th>
+              <th class="text-left px-5 py-3 font-medium text-xs uppercase tracking-wider" style="color: var(--text-muted)">Instagram</th>
+              <th class="text-left px-5 py-3 font-medium text-xs uppercase tracking-wider" style="color: var(--text-muted)">Prestation</th>
+              <th class="text-right px-5 py-3 font-medium text-xs uppercase tracking-wider" style="color: var(--text-muted)">Prix</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set days_fr = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+            {% set months_fr = ['', 'jan', 'fév', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'] %}
+            {% for r in reservations %}
+            <tr class="border-b transition-colors hover:bg-gray-50" style="border-color: var(--border)"
+                {% if not loop.last %}{% endif %}>
+              <td class="px-5 py-3.5 font-medium" style="color: var(--text)">
+                {{ days_fr[r.date.weekday()] }} {{ r.date.day }} {{ months_fr[r.date.month] }} {{ r.date.year }}
+              </td>
+              <td class="px-5 py-3.5" style="color: var(--text)">{{ r.time_slot }}</td>
+              <td class="px-5 py-3.5 font-medium" style="color: var(--text)">{{ r.name }}</td>
+              <td class="px-5 py-3.5">
+                {% if r.instagram %}
+                <a href="https://instagram.com/{{ r.instagram | replace('@', '') }}" target="_blank"
+                   class="font-medium" style="color: var(--olive)">{{ r.instagram }}</a>
+                {% else %}—{% endif %}
+              </td>
+              <td class="px-5 py-3.5" style="color: var(--text-muted)">{{ r.service }}</td>
+              <td class="px-5 py-3.5 text-right font-semibold" style="color: var(--olive-dark)">{{ r.price | int }}€</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-16" style="color: var(--text-muted)">
+        <p class="text-sm">Aucune réservation pour le moment.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</body>
+</html>
