@@ -21,12 +21,23 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-PRICE_WEEKDAY = 35
-PRICE_SUNDAY = 40
-PRICE_TEINTURE = 5
+SERVICES = [
+    {'id': 'browlift_complet',   'name': 'Browlift Complet',                       'price': 30},
+    {'id': 'browlift_simple',    'name': 'Browlift Simple',                        'price': 25},
+    {'id': 'lashlift_complet',   'name': 'Lashlift Complet',                       'price': 30},
+    {'id': 'lashlift_simple',    'name': 'Lashlift Simple',                        'price': 25},
+    {'id': 'korean_lashlift',    'name': 'Korean Lashlift',                        'price': 35},
+    {'id': 'manucure_japonaise', 'name': 'Manucure Japonaise',                     'price': 30},
+    {'id': 'freakles',           'name': 'Freakles',                               'price': 60, 'price_from': True},
+    {'id': 'grains_beaute',      'name': 'Grains de Beauté',                       'price': 15},
+    {'id': 'cils_bas',           'name': 'Cils du Bas',                            'price': 5},
+    {'id': 'no_wax',             'name': 'No Wax Restructuration / avec Teinture', 'price': 12},
+]
+SERVICES_MAP = {s['id']: s for s in SERVICES}
+
 TIME_SLOTS = ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30']
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'byoms2026')
-TZ = ZoneInfo('Europe/Brussels')
+TZ = ZoneInfo('Europe/Paris')
 
 
 class Reservation(db.Model):
@@ -36,10 +47,10 @@ class Reservation(db.Model):
     phone = db.Column(db.String(50), nullable=True)
     instagram = db.Column(db.String(100), nullable=False, default='')
     email = db.Column(db.String(200), nullable=True)
+    service = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, nullable=False)
     time_slot = db.Column(db.String(10), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    teinture = db.Column(db.Boolean, default=False)
     paid = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -73,7 +84,15 @@ def admin_required(f):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    realisations_dir = os.path.join(app.static_folder, 'images', 'realisations')
+    photos = []
+    if os.path.isdir(realisations_dir):
+        exts = {'.jpg', '.jpeg', '.png', '.webp'}
+        photos = sorted([
+            f for f in os.listdir(realisations_dir)
+            if os.path.splitext(f.lower())[1] in exts
+        ])
+    return render_template('index.html', services=SERVICES, photos=photos)
 
 
 @app.route('/booking', methods=['GET', 'POST'])
@@ -85,10 +104,14 @@ def booking():
         phone = request.form.get('phone', '').strip()
         instagram = request.form.get('instagram', '').strip()
         email = request.form.get('email', '').strip()
-        teinture = request.form.get('teinture') == 'on'
+        service_id = request.form.get('service_id', '').strip()
 
-        if not all([selected_date_str, time_slot, name, instagram]):
+        if not all([selected_date_str, time_slot, name, instagram, service_id]):
             flash('Veuillez remplir tous les champs.', 'error')
+            return redirect(url_for('booking'))
+
+        if service_id not in SERVICES_MAP:
+            flash('Prestation invalide.', 'error')
             return redirect(url_for('booking'))
 
         try:
@@ -105,14 +128,18 @@ def booking():
             flash('Ce créneau est déjà réservé.', 'error')
             return redirect(url_for('booking'))
 
-        is_sunday = selected_date.weekday() == 6
-        base_price = PRICE_SUNDAY if is_sunday else PRICE_WEEKDAY
-        total_price = base_price + (PRICE_TEINTURE if teinture else 0)
+        svc = SERVICES_MAP[service_id]
 
         r = Reservation(
-            name=name, phone=phone, instagram=instagram, email=email,
-            date=selected_date, time_slot=time_slot,
-            price=total_price, teinture=teinture, paid=True
+            name=name,
+            phone=phone or None,
+            instagram=instagram,
+            email=email or None,
+            service=svc['name'],
+            date=selected_date,
+            time_slot=time_slot,
+            price=svc['price'],
+            paid=True
         )
         db.session.add(r)
         db.session.commit()
@@ -120,11 +147,7 @@ def booking():
         session['last_reservation_id'] = r.id
         return redirect(url_for('confirmation'))
 
-    return render_template('booking.html',
-                           time_slots=TIME_SLOTS,
-                           price_weekday=PRICE_WEEKDAY,
-                           price_sunday=PRICE_SUNDAY,
-                           price_teinture=PRICE_TEINTURE)
+    return render_template('booking.html', services=SERVICES)
 
 
 @app.route('/confirmation')
@@ -270,9 +293,6 @@ def admin_dashboard():
                            today=today,
                            prev_month=prev_month,
                            next_month=next_month,
-                           price_weekday=PRICE_WEEKDAY,
-                           price_sunday=PRICE_SUNDAY,
-                           price_teinture=PRICE_TEINTURE,
                            months_fr=MONTHS_FR,
                            days_in_month=days_in_month)
 
@@ -312,9 +332,6 @@ def admin_move():
     ).first():
         return jsonify({'error': 'Ce créneau est déjà réservé'}), 400
 
-    is_sunday = new_date.weekday() == 6
-    base_price = PRICE_SUNDAY if is_sunday else PRICE_WEEKDAY
-    r.price = base_price + (PRICE_TEINTURE if r.teinture else 0)
     r.date = new_date
     r.time_slot = new_slot
     db.session.commit()

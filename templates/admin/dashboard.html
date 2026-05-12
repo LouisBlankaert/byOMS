@@ -52,7 +52,6 @@
       background: var(--olive-pale); color: var(--olive-dark); margin-bottom: 2px;
     }
     .rdv-pill:hover { opacity: 0.75; }
-    .rdv-pill.teinture { background: #fef3c7; color: #92400e; }
     .lock-btn {
       position: absolute; top: 4px; right: 4px;
       opacity: 0; transition: opacity 0.2s;
@@ -68,6 +67,14 @@
     .btn-danger:hover { background: #b91c1c; }
     .btn-outline { border: 2px solid var(--olive); color: var(--olive); background: transparent; transition: all 0.2s; }
     .btn-outline:hover { background: var(--olive); color: white; }
+    /* Toast */
+    .toast-stack { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast-item { pointer-events: all; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 14px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.12); animation: toast-in 0.35s cubic-bezier(.21,1.02,.73,1) forwards; max-width: 320px; background: white; }
+    .toast-item.hide { animation: toast-out 0.3s ease forwards; }
+    .toast-error { border-left: 4px solid #dc2626; color: #991b1b; }
+    .toast-success { border-left: 4px solid var(--olive); color: var(--olive-dark); }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toast-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(8px) scale(0.95); } }
   </style>
 </head>
 <body class="min-h-screen">
@@ -156,11 +163,10 @@
 
               <!-- Pilules RDV -->
               {% for r in day_rdvs %}
-              <div class="rdv-pill {{ 'teinture' if r.teinture else '' }}"
-                   onclick="openModal({{ r.id }}, '{{ r.name }}', '{{ r.phone }}', '{{ r.instagram | default('') }}', '{{ r.email }}', '{{ r.date }}', '{{ r.time_slot }}', {{ r.price }}, {{ 'true' if r.teinture else 'false' }})">
+              <div class="rdv-pill"
+                   onclick="openModal({{ r.id }}, '{{ r.name }}', '{{ r.phone or '' }}', '{{ r.instagram | default('') }}', '{{ r.email or '' }}', '{{ r.date }}', '{{ r.time_slot }}', {{ r.price }}, '{{ r.service }}')">
                 <span>{{ r.time_slot }}</span>
-                <span style="overflow:hidden;text-overflow:ellipsis;max-width:60px">{{ r.name.split()[0] }}</span>
-                {% if r.teinture %}<span>· T</span>{% endif %}
+                <span style="overflow:hidden;text-overflow:ellipsis;max-width:70px">{{ r.name.split()[0] }}</span>
               </div>
               {% endfor %}
 
@@ -233,8 +239,8 @@
           <span id="m-slot" class="font-medium"></span>
         </div>
         <div class="flex justify-between items-center">
-          <span style="color: var(--text-muted)">Teinture</span>
-          <span id="m-teinture"></span>
+          <span style="color: var(--text-muted)">Prestation</span>
+          <span id="m-service" class="font-medium text-right text-sm" style="color: var(--text); max-width: 180px"></span>
         </div>
         <div class="flex justify-between pt-3 border-t" style="border-color: var(--border)">
           <span class="font-semibold">Total</span>
@@ -296,19 +302,38 @@
     <input type="hidden" name="month" value="{{ current_month.strftime('%Y-%m') }}">
   </form>
 
+  <!-- Custom confirm modal -->
+  <div id="confirm-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 text-center">
+      <p id="confirm-msg" class="text-sm font-medium mb-6" style="color: var(--text)"></p>
+      <div class="flex gap-3">
+        <button id="confirm-cancel" class="flex-1 py-2.5 rounded-full text-sm font-medium btn-outline" style="border-color: var(--border); color: var(--text-muted)">Annuler</button>
+        <button id="confirm-ok" class="flex-1 py-2.5 rounded-full text-sm font-medium btn-danger">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast stack -->
+  <div class="toast-stack" id="toast-stack"></div>
+
   <script>
     let currentRdv = null;
 
-    function openModal(id, name, phone, instagram, email, date, slot, price, teinture) {
+    function openModal(id, name, phone, instagram, email, date, slot, price, service) {
       currentRdv = { id, date, slot };
       document.getElementById('m-name').textContent = name;
-      document.getElementById('m-phone').textContent = phone;
-      document.getElementById('m-phone').href = 'tel:' + phone;
+
+      const phoneEl = document.getElementById('m-phone');
+      phoneEl.textContent = phone || '—';
+      phoneEl.href = phone ? 'tel:' + phone : '#';
+
       const igEl = document.getElementById('m-instagram');
       igEl.textContent = instagram || '—';
       igEl.href = instagram ? 'https://instagram.com/' + instagram.replace('@', '') : '#';
-      document.getElementById('m-email').textContent = email;
-      document.getElementById('m-email').href = 'mailto:' + email;
+
+      const emailEl = document.getElementById('m-email');
+      emailEl.textContent = email || '—';
+      emailEl.href = email ? 'mailto:' + email : '#';
 
       const d = new Date(date + 'T00:00:00');
       const months = ['jan.', 'fév.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sep.', 'oct.', 'nov.', 'déc.'];
@@ -316,13 +341,7 @@
       document.getElementById('m-date').textContent = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
       document.getElementById('m-slot').textContent = slot;
       document.getElementById('m-price').textContent = price + '€';
-
-      const teintureEl = document.getElementById('m-teinture');
-      if (teinture) {
-        teintureEl.innerHTML = '<span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="background: #fef3c7; color: #92400e;">Oui · +5€</span>';
-      } else {
-        teintureEl.innerHTML = '<span class="text-gray-400 text-sm">Non</span>';
-      }
+      document.getElementById('m-service').textContent = service;
 
       document.getElementById('detail-modal').classList.remove('hidden');
       document.getElementById('detail-modal').classList.add('flex');
@@ -378,11 +397,39 @@
       el.classList.remove('hidden');
     }
 
+    function showToast(msg, type = 'error') {
+      const stack = document.getElementById('toast-stack');
+      const el = document.createElement('div');
+      el.className = `toast-item toast-${type}`;
+      const icon = type === 'error'
+        ? '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        : '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      el.innerHTML = icon + `<span>${msg}</span>`;
+      stack.appendChild(el);
+      setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 300); }, 4000);
+    }
+
+    function showConfirm(msg, onOk) {
+      const modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-msg').textContent = msg;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('confirm-ok').onclick = () => { closeConfirm(); onOk(); };
+      document.getElementById('confirm-cancel').onclick = closeConfirm;
+    }
+
+    function closeConfirm() {
+      const modal = document.getElementById('confirm-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
     function confirmDelete() {
       if (!currentRdv) return;
-      if (!confirm('Supprimer ce rendez-vous ?')) return;
-      document.getElementById('delete-rid').value = currentRdv.id;
-      document.getElementById('delete-form').submit();
+      showConfirm('Supprimer ce rendez-vous ?', () => {
+        document.getElementById('delete-rid').value = currentRdv.id;
+        document.getElementById('delete-form').submit();
+      });
     }
 
     async function toggleDay(dateStr) {
@@ -394,16 +441,16 @@
         const data = await res.json();
 
         if (data.requires_confirm) {
-          if (!confirm(`${data.count} RDV existent pour ce jour. Bloquer quand même ?`)) return;
-          form.append('confirm', 'yes');
-          const res2 = await fetch('/admin/toggle-day', { method: 'POST', body: form });
-          await res2.json();
-          window.location.reload();
+          showConfirm(`${data.count} RDV existent pour ce jour. Bloquer quand même ?`, async () => {
+            form.append('confirm', 'yes');
+            await fetch('/admin/toggle-day', { method: 'POST', body: form });
+            window.location.reload();
+          });
         } else {
           window.location.reload();
         }
       } catch(e) {
-        alert('Erreur.');
+        showToast('Erreur réseau.');
       }
     }
 

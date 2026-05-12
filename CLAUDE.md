@@ -3,27 +3,30 @@
 ## Business
 - Nom : By OMS
 - Instagram : @by.oms
-- Service : rehaussement de cils uniquement
-- Ville : Bruxelles
+- Spécialités : Brow Artist · Korean Lashlift · Lashlift
+- Ville : Creil, Île-de-France, France
+- Téléphone propriétaire : 0659226765
 - Horaires : lundi au dimanche, 10h - 18h
-- Durée par créneau : 1h
 - Créneaux : 10:00, 11:30, 13:00, 14:30, 16:00, 17:30
 
-## Prix
-- Semaine (lundi-samedi) : 35€ (variable `PRICE_WEEKDAY` dans app.py)
-- Dimanche : 40€ (variable `PRICE_SUNDAY` dans app.py)
-- Option teinture : +5€ (variable `PRICE_TEINTURE` dans app.py)
+## Prestations & Prix
+Définis dans `SERVICES` (liste) et `SERVICES_MAP` (dict par id) dans app.py :
+- Browlift Complet : 30€
+- Browlift Simple : 25€
+- Lashlift Complet : 30€
+- Lashlift Simple : 25€
+- Korean Lashlift : 35€
+- Manucure Japonaise : 30€
+- Freakles : à partir de 60€
+- Grains de Beauté : 15€
+- Cils du Bas : 5€
+- No Wax Restructuration / avec Teinture : 12€
+
+Pas de tarification jour-de-semaine (supprimé). Prix fixe par prestation.
 
 ## Paiement
 - **Masqué pour le moment** — la section paiement/virement est retirée de l'interface
 - Quand elle sera réactivée : ajouter `BANK_IBAN` dans `.env` et remettre la section dans `templates/confirmation.html`
-- Flow prévu : booking form → sauvegarde en DB (`paid=True`) → `/confirmation` avec IBAN
-
-## Option teinture
-- Prix : +5€ (variable `PRICE_TEINTURE` dans app.py)
-- Toggle dans le formulaire étape 4
-- Champ `teinture` (boolean) dans le modèle Reservation
-- Affiché dans la confirmation et dans l'admin (modal + pilule calendrier "· T")
 
 ## Notifications
 - **À faire** : mettre en place une notification email quand un RDV est enregistré
@@ -50,11 +53,12 @@
 - Couleur principale : vert olive (`#6B7C3C`)
 
 ## Modèle Reservation
-- Champs : id, name, phone, instagram, email, date, time_slot, price, teinture, paid, created_at
+- Champs : id, name, phone, instagram, email, service, date, time_slot, price, paid, created_at
 - `paid=True` mis automatiquement à la sauvegarde (pas de paiement en ligne)
 - `instagram` : obligatoire. `phone` et `email` : optionnels (nullable=True)
-- Ordre formulaire étape 3 : Nom → Instagram → Téléphone (opt.) → Email (opt.)
-- Les créneaux passés aujourd'hui sont grisés (fuseau Europe/Brussels via zoneinfo)
+- `service` : nom de la prestation choisie (ex: "Korean Lashlift")
+- Formulaire 5 étapes : Prestation → Date → Créneau → Coordonnées → Récap
+- Les créneaux passés aujourd'hui sont grisés (fuseau Europe/Paris via zoneinfo)
 
 ## Modèle UnavailableDay
 - Table `unavailable_days` : id, date (unique)
